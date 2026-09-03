@@ -1,0 +1,26 @@
+{
+    "name": "hieu-dev-92264/laravel-modules",
+    "description": "personalization module generator",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "HieuDev92264\\LaravelModules\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "hieu92264",
+            "email": "nguyenthehieu20182021@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "extra": {
+        "laravel": {
+            "providers": [
+                "HieuDev92264\\LaravelModules\\LaravelModuleServiceProvider"
+            ]
+        }
+    }
+}
