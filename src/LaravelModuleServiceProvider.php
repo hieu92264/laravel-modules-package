@@ -24,6 +24,7 @@ class LaravelModuleServiceProvider extends ServiceProvider
                 Commands\MakeModuleMigration::class,
                 Commands\MakeModuleRepositoryCommand::class,
                 Commands\MakeModuleServiceCommand::class,
+                Commands\MakeModuleModelCommand::class
             ]);
 
             $this->publishes([
