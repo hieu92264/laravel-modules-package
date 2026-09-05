@@ -5,6 +5,7 @@ namespace HieuDev92264\LaravelModules\Commands;
 use HieuDev92264\LaravelModules\Commands\Concerns\InteractsWithModules;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 class MakeModuleMigration extends Command
 {
@@ -52,7 +53,7 @@ class MakeModuleMigration extends Command
         }
 
         $stubRelativePath = $this->migrationStub($migrationName);
-        $stubPath = $this->stubsBasePath().DIRECTORY_SEPARATOR.$stubRelativePath;
+        $stubPath = $this->stubsBasePath() . DIRECTORY_SEPARATOR . $stubRelativePath;
 
         if (! File::exists($stubPath)) {
             $this->error("Migration stub [{$stubPath}] does not exist.");
@@ -68,8 +69,8 @@ class MakeModuleMigration extends Command
             return self::FAILURE;
         }
 
-        $migrationsPath = $modulePath.DIRECTORY_SEPARATOR.'Database'.DIRECTORY_SEPARATOR.'Migrations';
-        $migrationPath = $migrationsPath.DIRECTORY_SEPARATOR.$this->migrationFileName($migrationName);
+        $migrationsPath = $modulePath . DIRECTORY_SEPARATOR . 'Database' . DIRECTORY_SEPARATOR . 'Migrations';
+        $migrationPath = $migrationsPath . DIRECTORY_SEPARATOR . $this->migrationFileName($migrationName);
 
         if (! $this->ensureFilesCanBeCreated([$migrationPath], (bool) $this->option('force'))) {
             return self::FAILURE;
@@ -98,7 +99,7 @@ class MakeModuleMigration extends Command
 
     private function migrationFileName(string $name): string
     {
-        return now()->format('Y_m_d_His').'_'.$name.'.php';
+        return now()->format('Y_m_d_His') . '_' . $name . '.php';
     }
 
     private function migrationTable(string $name): string
@@ -109,17 +110,19 @@ class MakeModuleMigration extends Command
             return Str::snake(trim($table));
         }
 
-        foreach ([
-                     '/^create_(.+)_table$/',
-                     '/^create_(.+)$/',
-                     '/^.+_to_(.+)_table$/',
-                     '/^.+_to_(.+)$/',
-                     '/^.+_from_(.+)_table$/',
-                     '/^.+_from_(.+)$/',
-                     '/^.+_in_(.+)_table$/',
-                     '/^.+_in_(.+)$/',
-                     '/^.+_(.+)_table$/',
-                 ] as $pattern) {
+        foreach (
+            [
+                '/^create_(.+)_table$/',
+                '/^create_(.+)$/',
+                '/^.+_to_(.+)_table$/',
+                '/^.+_to_(.+)$/',
+                '/^.+_from_(.+)_table$/',
+                '/^.+_from_(.+)$/',
+                '/^.+_in_(.+)_table$/',
+                '/^.+_in_(.+)$/',
+                '/^.+_(.+)_table$/',
+            ] as $pattern
+        ) {
             if (preg_match($pattern, $name, $matches) === 1) {
                 return Str::snake($matches[1]);
             }
