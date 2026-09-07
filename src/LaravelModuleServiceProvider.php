@@ -4,6 +4,7 @@ namespace HieuDev92264\LaravelModules;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Route;
 
 class LaravelModuleServiceProvider extends ServiceProvider
 {
@@ -38,6 +39,7 @@ class LaravelModuleServiceProvider extends ServiceProvider
 
         $this->bootModuleMigrations();
         $this->registerBlueprintMacros();
+        $this->registerPrefixRoutes();
     }
 
     private function bootModuleMigrations(): void
@@ -62,6 +64,24 @@ class LaravelModuleServiceProvider extends ServiceProvider
                 $this->string('user_name_created')->nullable();
                 $this->string('user_name_updated')->nullable();
             });
+        }
+    }
+
+    private function registerPrefixRoutes(): void
+    {
+        $apiPrefix = trim((string) config('modules.api_prefix', 'api'), '/');
+        $basePath = config('modules.base_path', app_path('Modules'));
+
+        $moduleRoutes = glob($basePath . '/*/Routes/*.php') ?: [];
+
+        foreach ($moduleRoutes as $routeFile) {
+            $fileName = basename($routeFile);
+
+            if ($fileName === 'web.php') {
+                Route::middleware('web')->group($routeFile);
+            } else {
+                Route::middleware('api')->prefix($apiPrefix)->group($routeFile);
+            }
         }
     }
 }
