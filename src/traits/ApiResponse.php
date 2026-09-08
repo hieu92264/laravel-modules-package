@@ -20,7 +20,7 @@ trait ApiResponse
             'status_code' => $statusCode,
             'metadata' => $metadata,
             'path' => request()->getPathInfo(),
-            'timestamp' => now()->toDateTimeString(),
+            'timestamp' => now()->toISOString(),
         ];
 
         // Chỉ cần config('app.debug') là đủ chuẩn trong Laravel

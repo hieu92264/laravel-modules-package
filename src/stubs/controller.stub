@@ -3,7 +3,9 @@
 namespace {{ namespace }};
 
 use App\Http\Controllers\Controller;
+use HieuDev92264\LaravelModules\Traits\ApiResponse;
 
 class {{ class }} extends Controller
 {
+  use ApiResponse;
 }
