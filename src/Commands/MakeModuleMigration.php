@@ -38,6 +38,12 @@ class MakeModuleMigration extends Command
         $moduleName = $this->normalizeModuleName($this->argument('module'));
         $migrationName = $this->normalizeMigrationName((string) $this->argument('name'));
 
+        if ($this->option('create') !== null && $this->option('table') !== null) {
+            $this->error('Use either --create or --table, not both.');
+
+            return self::FAILURE;
+        }
+
         if (! $this->ensureValidName($moduleName, 'module')) {
             return self::FAILURE;
         }
@@ -53,7 +59,7 @@ class MakeModuleMigration extends Command
         }
 
         $stubRelativePath = $this->migrationStub($migrationName);
-        $stubPath = $this->stubsBasePath() . DIRECTORY_SEPARATOR . $stubRelativePath;
+        $stubPath = $this->stubPath($stubRelativePath);
 
         if (! File::exists($stubPath)) {
             $this->error("Migration stub [{$stubPath}] does not exist.");

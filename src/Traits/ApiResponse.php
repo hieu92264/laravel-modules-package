@@ -1,8 +1,9 @@
 <?php
 
-namespace HieuDev92264\LaravelModules\Traits; // Đổi 'traits' thành 'Traits'
+namespace HieuDev92264\LaravelModules\Traits;
 
 use Illuminate\Http\JsonResponse;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -14,8 +15,11 @@ trait ApiResponse
         int $statusCode = Response::HTTP_OK,
         ?Throwable $exception = null
     ): JsonResponse {
+        if ($statusCode < Response::HTTP_CONTINUE || $statusCode >= 600) {
+            throw new InvalidArgumentException('The HTTP status code must be between 100 and 599.');
+        }
+
         $payload = [
-            // Dùng text mặc định nếu người dùng không truyền message
             'message' => $message ?? 'Success',
             'status_code' => $statusCode,
             'metadata' => $metadata,
@@ -23,19 +27,33 @@ trait ApiResponse
             'timestamp' => now()->toISOString(),
         ];
 
-        // Chỉ cần config('app.debug') là đủ chuẩn trong Laravel
         if ($exception && config('app.debug')) {
             $payload['debug'] = [
                 'exception' => $exception::class,
                 'message' => $exception->getMessage(),
                 'file' => $exception->getFile(),
                 'line' => $exception->getLine(),
-                // Giới hạn Trace ở 5 cấp độ để tránh tràn bộ nhớ JSON
-                'trace' => array_slice($exception->getTrace(), 0, 5),
+                'trace' => $this->exceptionTrace($exception),
             ];
         }
 
         return response()->json($payload, $statusCode);
+    }
+
+    /**
+     * @return array<int, array<string, int|string>>
+     */
+    private function exceptionTrace(Throwable $exception): array
+    {
+        return array_map(static function (array $frame): array {
+            return array_filter([
+                'file' => $frame['file'] ?? null,
+                'line' => $frame['line'] ?? null,
+                'class' => $frame['class'] ?? null,
+                'type' => $frame['type'] ?? null,
+                'function' => $frame['function'] ?? null,
+            ], static fn (mixed $value): bool => $value !== null);
+        }, array_slice($exception->getTrace(), 0, 5));
     }
 
     protected function success(

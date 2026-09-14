@@ -36,7 +36,6 @@ class MakeModuleModelCommand extends Command
         $module = $this->normalizeModuleName((string) $this->argument('module'));
         $model = $this->normalizeClassName((string) $this->argument('name'));
 
-        // Đã sửa $service thành $model
         if (! $this->ensureValidName($module, 'module') || ! $this->ensureValidName($model, 'model')) {
             return self::FAILURE;
         }
@@ -58,7 +57,6 @@ class MakeModuleModelCommand extends Command
             '{{ class }}' => $model,
         ]);
 
-        // Đã sửa chữ "Service" thành "Model"
         $this->components->info("Model [{$model}] created successfully in module [{$module}].");
 
         return self::SUCCESS;

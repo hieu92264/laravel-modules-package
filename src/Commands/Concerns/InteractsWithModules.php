@@ -8,14 +8,26 @@ use Illuminate\Support\Str;
 
 trait InteractsWithModules
 {
-    protected function modulesBasePath(): string {
+    protected function modulesBasePath(): string
+    {
         return rtrim((string) config('modules.base_path', app_path('Modules')), '\\/');
     }
 
     protected function stubsBasePath(): string
     {
-        $stubsPath = __DIR__ . '/../../stubs';
-        return rtrim($stubsPath, '\\/');
+        return rtrim(__DIR__ . '/../../stubs', '\\/');
+    }
+
+    protected function stubPath(string $stubRelativePath): string
+    {
+        $publishedStubsPath = rtrim((string) config('modules.stubs_path', base_path('stubs/modules')), '\\/');
+        $publishedStubPath = $publishedStubsPath.DIRECTORY_SEPARATOR.$stubRelativePath;
+
+        if (File::isFile($publishedStubPath)) {
+            return $publishedStubPath;
+        }
+
+        return $this->stubsBasePath().DIRECTORY_SEPARATOR.$stubRelativePath;
     }
 
     protected function normalizeModuleName(string $name): string
@@ -97,11 +109,15 @@ trait InteractsWithModules
 
     protected function ensureValidName(string $name, string $label): bool
     {
-        if ($name !== '') {
+        $pattern = $label === 'migration'
+            ? '/^[a-z0-9]+(?:_[a-z0-9]+)*$/'
+            : '/^[A-Z][A-Za-z0-9]*$/';
+
+        if (preg_match($pattern, $name) === 1) {
             return true;
         }
 
-        $this->error(ucfirst($label).' name is invalid.');
+        $this->error(ucfirst($label).' name is invalid. Use letters and numbers only; migration names may also use single underscores.');
 
         return false;
     }
@@ -159,7 +175,7 @@ trait InteractsWithModules
      */
     protected function putStub(string $stubRelativePath, string $destinationPath, array $replacements = []): void
     {
-        $stubPath = $this->stubsBasePath().DIRECTORY_SEPARATOR.$stubRelativePath;
+        $stubPath = $this->stubPath($stubRelativePath);
 
         $contents = File::get($stubPath);
         $contents = str_replace(array_keys($replacements), array_values($replacements), $contents);

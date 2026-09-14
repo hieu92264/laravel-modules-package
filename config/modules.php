@@ -3,7 +3,7 @@
 return [
     'base_path' => app_path('Modules'),
     'namespace' => 'App\\Modules',
-    //array for short name
     'aliases' => [],
     'api_prefix' => 'api',
+    'stubs_path' => base_path('stubs/modules'),
 ];

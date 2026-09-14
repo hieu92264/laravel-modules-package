@@ -1,81 +1,92 @@
 # Laravel Modules Generator
 
-Package nội bộ cung cấp bộ công cụ Artisan (Generator) để tự động hóa việc xây dựng cấu trúc Module cá nhân hóa trong các dự án Laravel.
+Package cung cấp các Artisan command để tạo cấu trúc module cho ứng dụng Laravel.
 
-## 1. Cài đặt (Private Repository)
+## Yêu cầu
 
-Vì đây là package lưu trữ nội bộ (không công khai trên Packagist), bạn cần trỏ trực tiếp dự án về kho lưu trữ Git trước khi cài đặt.
+- PHP 8.2 trở lên.
+- Laravel 10, 11, 12 hoặc 13.
 
-**Bước 1:** Thêm block `repositories` vào file `composer.json` của dự án Laravel (dự án gốc):
+Phiên bản package phải được cài bằng tag ổn định. Ví dụ: `^1.0` sẽ chỉ nhận các bản tương thích theo Semantic Versioning; tránh dùng `dev-main` trong production.
+
+## Cài đặt từ VCS riêng
+
+Thêm repository thật vào `composer.json` của ứng dụng:
 
 ```json
 "repositories": [
     {
         "type": "vcs",
-        "url": "[https://github.com/](https://github.com/)<username-cua-ban>/laravel-modules"
+        "url": "https://github.com/<username>/laravel-modules.git"
     }
 ]
 ```
 
-**Bước 2:** Chạy lệnh cài đặt qua Composer:
+Sau khi repository đã có tag `v1.0.0`, cài đặt bằng:
 
 ```bash
-composer require hieu-dev-92264/laravel-modules
+composer require hieu-dev-92264/laravel-modules:^1.0
 ```
 
-## 2. Cấu hình (Configuration)
-
-Mặc định, package đã có thể hoạt động ngay mà không cần cấu hình. Tuy nhiên, để linh hoạt điều chỉnh theo từng dự án, bạn nên xuất file cấu hình ra ngoài:
+## Cấu hình
 
 ```bash
-php artisan vendor:publish --tag="modules-config"
+php artisan vendor:publish --tag=modules-config
 ```
 
-**File `config/modules.php` sinh ra có tác dụng gì?**
-* **Thay đổi đường dẫn (`base_path` & `namespace`):** Mặc định các module được tạo ra ở `app/Modules`. Bạn có thể đổi vị trí này nếu dự án cấu trúc theo kiến trúc khác.
-* **Thiết lập bí danh (`aliases`):** Cho phép định nghĩa các phím tắt (alias) để gọi lệnh nhanh hơn. Ví dụ, nếu bạn cấu hình `'org' => 'Organization'`, thay vì phải gõ dài dòng `php artisan make:module Organization`, bạn chỉ cần gõ `php artisan make:module org`.
+Các cấu hình chính:
 
-## 3. Danh sách câu lệnh (Commands)
+- `base_path`: nơi chứa modules, mặc định `app/Modules`.
+- `namespace`: namespace của code sinh ra, mặc định `App\Modules`.
+- `aliases`: ánh xạ tên rút gọn module.
+- `api_prefix`: prefix cho route API, mặc định `api`.
+- `stubs_path`: nơi ưu tiên đọc stub đã publish, mặc định `stubs/modules` trong ứng dụng.
 
-Bộ lệnh Artisan này giúp bạn sinh mã nguồn chuẩn hóa, giảm thiểu tối đa các thao tác lặp đi lặp lại.
-
-### Tạo Module hoàn chỉnh
-Lệnh này tự động tạo ra một thư mục module mới kèm theo toàn bộ hệ thống file cấu trúc bên trong (Controllers, Models, Repositories, Services, Routes, v.v.).
+Để tuỳ chỉnh template:
 
 ```bash
-php artisan make:module {TênModule_hoặc_Alias}
+php artisan vendor:publish --tag=modules-stubs
 ```
-*Ví dụ: `php artisan make:module UserManagement`*
 
-### Tạo các thành phần đơn lẻ
-Trong quá trình phát triển, nếu bạn cần tạo thêm một class hoặc một tầng cụ thể vào module đã tồn tại, hãy dùng các lệnh sau:
+Sau khi publish, generator sẽ ưu tiên từng file ở `stubs/modules`. Nếu một file hoặc thư mục này chưa tồn tại, package dùng stub nội bộ tương ứng.
 
-* **Tạo Controller:**
-  ```bash
-  php artisan make:module:controller {TênModule}
-  ```
-* **Tạo Service & Service Interface:** (Xử lý logic nghiệp vụ)
-  ```bash
-  php artisan make:module:service {TênModule}
-  ```
-* **Tạo Repository & Repository Interface:** (Giao tiếp với Database)
-  ```bash
-  php artisan make:module:repository {TênModule}
-  ```
-* **Tạo DTO (Data Transfer Object):**
-  ```bash
-  php artisan make:module:dto {TênModule}
-  ```
-* **Tạo Migration:**
-  ```bash
-  php artisan make:module:migration {TênModule}
-  ```
-
-## 4. Tùy biến mã nguồn (Stubs Customization)
-
-Toàn bộ code được sinh ra từ lệnh Artisan dựa trên các file mẫu (stubs). Nếu dự án hiện tại của bạn có chuẩn code riêng, bạn có thể xuất các file mẫu này ra dự án để tự do chỉnh sửa:
+## Commands
 
 ```bash
-php artisan vendor:publish --tag="modules-stubs"
+php artisan make:module Billing
+php artisan module:controller InvoiceController Billing
+php artisan module:dto CreateInvoiceData Billing
+php artisan module:model Invoice Billing
+php artisan module:service InvoiceService Billing
+php artisan module:repo InvoiceRepository Billing
+php artisan module:migration create_invoices_table Billing --create=invoices
+php artisan module:migration add_status_to_invoices Billing --table=invoices
 ```
-Các file mẫu sẽ được đẩy ra thư mục `stubs/modules/` ở gốc dự án. Kể từ thời điểm này, các lệnh `make:module` sẽ ưu tiên sinh code theo file stub mới nhất mà bạn vừa chỉnh sửa.
+
+Tên module, controller, DTO, model, service và repository chỉ chấp nhận chữ và số sau khi được chuẩn hoá thành PascalCase. Migration chỉ chấp nhận chữ thường, số và dấu gạch dưới đơn. Không thể dùng đồng thời `--create` và `--table`.
+
+## API response
+
+`ApiResponse` trả về một contract thống nhất:
+
+```json
+{
+    "message": "Success",
+    "status_code": 200,
+    "metadata": null,
+    "path": "/api/billing/invoices",
+    "timestamp": "2026-09-14T00:00:00.000000Z"
+}
+```
+
+Exception debug chỉ được thêm khi `app.debug=true`; trace đã được lọc để không đưa argument nhạy cảm vào response. Exception handler của ứng dụng nên dùng cùng các trường `message`, `status_code` và `metadata` để giữ một API contract duy nhất.
+
+## Kiểm tra package
+
+```bash
+composer validate --strict
+composer dump-autoload --optimize --strict-psr
+composer test
+```
+
+Xem `report.md` để biết các lỗi đã phát hiện, nguyên nhân và cách khắc phục.

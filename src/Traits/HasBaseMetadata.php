@@ -1,6 +1,6 @@
 <?php
 
-namespace HieuDev92264\LaravelModules\traits;
+namespace HieuDev92264\LaravelModules\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
 
@@ -13,6 +13,8 @@ trait HasBaseMetadata
             'user_name_created',
             'user_name_updated',
         ]);
+
+        $this->mergeCasts($this->baseMetadataCasts());
     }
 
     protected static function bootHasBaseMetadata(): void

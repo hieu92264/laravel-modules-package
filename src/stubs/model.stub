@@ -2,7 +2,7 @@
 
 namespace {{ namespace }};
 
-use HieuDev92264\LaravelModules\Bases\BaseModel;
+use HieuDev92264\LaravelModules\Base\BaseModel;
 
 class {{ class }} extends BaseModel
 {
@@ -15,15 +15,7 @@ class {{ class }} extends BaseModel
         // 'column_name',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return array_merge(parent::casts(), [
-            // 'date_column' => 'datetime',
-        ]);
-    }
+    protected $casts = [
+        // 'date_column' => 'datetime',
+    ];
 }

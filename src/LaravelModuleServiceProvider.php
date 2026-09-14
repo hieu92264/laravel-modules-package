@@ -11,7 +11,6 @@ class LaravelModuleServiceProvider extends ServiceProvider
     public function register(): void
     {
 
-        // gộp cấu hình mặc định của package vào dự án gốc
         $this->mergeConfigFrom(__DIR__ . '/../config/modules.php', 'modules');
     }
 
@@ -37,21 +36,20 @@ class LaravelModuleServiceProvider extends ServiceProvider
             ], 'modules-stubs');
         }
 
-        $this->bootModuleMigrations();
         $this->registerBlueprintMacros();
+        $this->bootModuleMigrations();
         $this->registerPrefixRoutes();
     }
 
     private function bootModuleMigrations(): void
     {
-        $basePath = config('modules.base_path', app_path('Modules'));
+        $basePath = rtrim((string) config('modules.base_path', app_path('Modules')), '\\/');
 
-        $migrationPaths = glob($basePath . '/*/Database/Migrations');
+        $migrationPaths = glob($basePath . '/*/Database/Migrations') ?: [];
+        sort($migrationPaths, SORT_STRING);
 
-        if (is_array($migrationPaths)) {
-            foreach ($migrationPaths as $path) {
-                $this->loadMigrationsFrom($path);
-            }
+        foreach ($migrationPaths as $path) {
+            $this->loadMigrationsFrom($path);
         }
     }
 
@@ -70,9 +68,10 @@ class LaravelModuleServiceProvider extends ServiceProvider
     private function registerPrefixRoutes(): void
     {
         $apiPrefix = trim((string) config('modules.api_prefix', 'api'), '/');
-        $basePath = config('modules.base_path', app_path('Modules'));
+        $basePath = rtrim((string) config('modules.base_path', app_path('Modules')), '\\/');
 
         $moduleRoutes = glob($basePath . '/*/Routes/*.php') ?: [];
+        sort($moduleRoutes, SORT_STRING);
 
         foreach ($moduleRoutes as $routeFile) {
             $fileName = basename($routeFile);
