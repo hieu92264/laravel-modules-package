@@ -2,7 +2,7 @@
 
 namespace HieuDev92264\LaravelModules\Postman;
 
-use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\Route;
 
 class RouteScanner
 {
