@@ -2,7 +2,6 @@
 
 namespace HieuDev92264\LaravelModules;
 
-use HieuDev92264\LaravelModules\Commands\GeneratePostmanCommand;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Route;
@@ -26,7 +25,7 @@ class LaravelModuleServiceProvider extends ServiceProvider
                 Commands\MakeModuleRepositoryCommand::class,
                 Commands\MakeModuleServiceCommand::class,
                 Commands\MakeModuleModelCommand::class,
-                GeneratePostmanCommand::class
+                Commands\GeneratePostmanCommand::class
             ]);
 
             $this->publishes([
