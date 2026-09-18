@@ -2,7 +2,7 @@
 
 namespace HieuDev92264\LaravelModules\Postman;
 
-use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\Route;
 
 class ModuleResolver
 {
@@ -20,7 +20,7 @@ class ModuleResolver
             return null;
         }
 
-        $pattern = '/^'.preg_quote($namespace, '/').'\\\\([^\\\\]+)\\\\/';
+        $pattern = '/^' . preg_quote($namespace, '/') . '\\\\([^\\\\]+)\\\\/';
 
         if (preg_match($pattern, $action, $matches) === 1) {
             return $matches[1];
