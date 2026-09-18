@@ -2,7 +2,7 @@
 
 namespace HieuDev92264\LaravelModules\Postman;
 
-use Illuminate\Support\Facades\Route;
+use Illuminate\Routing\Route;
 
 class ModuleResolver
 {
