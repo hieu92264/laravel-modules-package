@@ -14,13 +14,15 @@ class ModuleResolver
             return null;
         }
 
-        if (
-            preg_match(
-                '/^App\\\\Modules\\\\([^\\\\]+)\\\\/',
-                $action,
-                $matches
-            )
-        ) {
+        $namespace = trim((string) config('modules.namespace', 'App\\Modules'), '\\');
+
+        if ($namespace === '') {
+            return null;
+        }
+
+        $pattern = '/^'.preg_quote($namespace, '/').'\\\\([^\\\\]+)\\\\/';
+
+        if (preg_match($pattern, $action, $matches) === 1) {
             return $matches[1];
         }
 

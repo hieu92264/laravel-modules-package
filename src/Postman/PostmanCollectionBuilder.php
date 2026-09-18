@@ -34,7 +34,7 @@ class PostmanCollectionBuilder
             'variable' => [
                 [
                     'key' => config('modules.postman.base_url_variable', 'base_url'),
-                    'value' => config('app.url') . '/' . config('modules.api_prefix', 'api'),
+                    'value' => $this->baseUrl(),
                     'type' => 'string'
                 ],
                 [
@@ -46,5 +46,15 @@ class PostmanCollectionBuilder
 
             'item' => $items
         ];
+    }
+
+    private function baseUrl(): string
+    {
+        $applicationUrl = rtrim((string) config('app.url', 'http://localhost'), '/');
+        $apiPrefix = trim((string) config('modules.api_prefix', 'api'), '/');
+
+        return $apiPrefix === ''
+            ? $applicationUrl
+            : $applicationUrl.'/'.$apiPrefix;
     }
 }
