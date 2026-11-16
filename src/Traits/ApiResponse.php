@@ -3,6 +3,7 @@
 namespace HieuDev92264\LaravelModules\Traits;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Pagination\LengthAwarePaginator;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -13,7 +14,8 @@ trait ApiResponse
         mixed $metadata = null,
         ?string $message = null,
         int $statusCode = Response::HTTP_OK,
-        ?Throwable $exception = null
+        ?Throwable $exception = null,
+        ?array $pagination = null
     ): JsonResponse {
         if ($statusCode < Response::HTTP_CONTINUE || $statusCode >= 600) {
             throw new InvalidArgumentException('The HTTP status code must be between 100 and 599.');
@@ -52,7 +54,7 @@ trait ApiResponse
                 'class' => $frame['class'] ?? null,
                 'type' => $frame['type'] ?? null,
                 'function' => $frame['function'] ?? null,
-            ], static fn (mixed $value): bool => $value !== null);
+            ], static fn(mixed $value): bool => $value !== null);
         }, array_slice($exception->getTrace(), 0, 5));
     }
 
@@ -75,6 +77,27 @@ trait ApiResponse
             $message ?? 'An error occurred',
             $statusCode,
             $exception
+        );
+    }
+
+    protected function paginated(
+        LengthAwarePaginator $paginator,
+        ?string $message = null,
+        int $statusCode = Response::HTTP_OK,
+    ): JsonResponse {
+        return $this->apiResponse(
+            metadata: $paginator->items(),
+            message: $message ?? 'Success',
+            statusCode: $statusCode,
+            pagination: [
+                'current_page' => $paginator->currentPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'last_page' => $paginator->lastPage(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
+                'has_more_pages' => $paginator->hasMorePages(),
+            ]
         );
     }
 }
