@@ -8,6 +8,11 @@
             "HieuDev92264\\LaravelModules\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "HieuDev92264\\LaravelModules\\Tests\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "hieu92264",
@@ -21,10 +26,15 @@
         "illuminate/filesystem": "^10.0|^11.0|^12.0|^13.0",
         "illuminate/http": "^10.0|^11.0|^12.0|^13.0",
         "illuminate/routing": "^10.0|^11.0|^12.0|^13.0",
-        "illuminate/support": "^10.0|^11.0|^12.0|^13.0"
+        "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
+        "buglinjo/laravel-webp": "^3.2"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0 || ^9.0 || ^10.0 || ^11.0"
     },
     "scripts": {
-        "test": "@php tests/verify.php"
+        "test": "@php vendor/bin/phpunit",
+        "test:lint": "@php tests/lint.php"
     },
     "extra": {
         "laravel": {
