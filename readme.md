@@ -1,31 +1,57 @@
 # Laravel Modules Generator
 
-Laravel Modules Generator creates a consistent module structure, module artifacts, migrations, and Postman collections for Laravel applications.
+Laravel Modules Generator giúp tạo cấu trúc module thống nhất, các thành phần của module, migration và Postman Collection cho ứng dụng Laravel.
 
-## Requirements
+## Yêu cầu
 
-- PHP 8.2+ for Laravel 10–12; PHP 8.3+ for Laravel 13.
-- Laravel 10, 11, 12, or 13.
-- The GD extension (`ext-gd`) when using WebP conversion.
+- PHP 8.2+ cho Laravel 10–12; PHP 8.3+ cho Laravel 13.
+- Laravel 10, 11, 12 hoặc 13.
+- Extension GD (`ext-gd`) khi dùng tính năng chuyển đổi sang WebP.
 
-Install stable tagged releases in production:
+Cài đặt bản phát hành ổn định đã được gắn tag trong môi trường production:
 
 ```bash
 composer require hieu-dev-92264/laravel-modules:^1.0
 ```
 
-For a private VCS repository, add its real Git URL under `repositories` in the consuming application's `composer.json` before requiring the package.
+Nếu dùng repository VCS riêng tư, hãy thêm URL Git thực tế vào mục `repositories` trong `composer.json` của ứng dụng trước khi cài package.
 
-## Configuration and stubs
+## Cập nhật package trong các ứng dụng đang sử dụng
+
+Composer chỉ cập nhật đến các phiên bản đã được gắn tag và push lên remote. Vì vậy, trước hết cần tạo một tag mới từ commit đã kiểm thử ở repository package:
+
+```bash
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+Sau đó, trong từng ứng dụng Laravel đang sử dụng package, chạy:
+
+```bash
+composer clear-cache
+composer update hieu-dev-92264/laravel-modules --with-all-dependencies
+composer show hieu-dev-92264/laravel-modules
+php artisan optimize:clear
+```
+
+Lệnh `composer show` cần hiển thị phiên bản tag mới, ví dụ `v1.0.1`. Nếu Composer báo không có gì để cập nhật, hãy kiểm tra:
+
+- Tag mới đã được push đúng remote mà ứng dụng khai báo trong `repositories`.
+- Phiên bản yêu cầu trong `composer.json` của ứng dụng là `"hieu-dev-92264/laravel-modules": "^1.0"`.
+- Không dùng nhánh `dev-main` trong production; hãy phát hành một tag mới cho mỗi bản ổn định.
+
+Khi cập nhật, không chạy `vendor:publish --tag=modules-config --force` nếu chưa sao lưu hoặc so sánh cấu hình hiện tại, vì lệnh này sẽ ghi đè `config/modules.php` đã được tuỳ chỉnh. Tương tự, chỉ dùng `--force` khi publish stubs nếu muốn thay thế các stub đã chỉnh sửa.
+
+## Cấu hình và stubs
 
 ```bash
 php artisan vendor:publish --tag=modules-config
 php artisan vendor:publish --tag=modules-stubs
 ```
 
-`modules.php` configures the module base path, generated namespace, aliases, API prefix, and the location of published stubs. Published stubs take precedence one file at a time; package stubs remain the fallback.
+`modules.php` cấu hình đường dẫn gốc của module, namespace được sinh, aliases, tiền tố API và vị trí các stub đã publish. Mỗi stub đã publish được ưu tiên sử dụng; stub từ package là phương án dự phòng.
 
-## Commands
+## Các lệnh
 
 ```bash
 php artisan make:module Billing
@@ -39,11 +65,11 @@ php artisan module:migration add_status_to_invoices Billing --table=invoices
 php artisan module:postman --output=postman_api.json
 ```
 
-Module and class names are normalized to PascalCase and must contain only letters and numbers. Migration names are normalized to lowercase snake case. A generator does not overwrite existing files unless `--force` is supplied. Migration commands reject using `--create` and `--table` together.
+Tên module và class được chuẩn hoá sang PascalCase, chỉ được chứa chữ cái và số. Tên migration được chuẩn hoá sang snake_case viết thường. Các generator không ghi đè file đã tồn tại trừ khi dùng `--force`. Lệnh migration không cho phép dùng đồng thời `--create` và `--table`.
 
-## Postman generation
+## Tạo Postman Collection
 
-`module:postman` scans registered routes whose controller namespace matches `modules.namespace`, groups them by module, and writes a Postman Collection v2.1 JSON file. Routes using configured auth middleware receive configured bearer-token authentication.
+`module:postman` quét các route đã đăng ký có namespace controller khớp với `modules.namespace`, nhóm chúng theo module và ghi ra tệp Postman Collection v2.1 JSON. Các route dùng middleware xác thực được cấu hình sẽ nhận xác thực bearer token tương ứng.
 
 ```php
 // config/modules.php
@@ -55,11 +81,11 @@ Module and class names are normalized to PascalCase and must contain only letter
 ],
 ```
 
-The collection base URL combines `app.url` and `modules.api_prefix`; optional Laravel route parameters become Postman `:parameters`.
+Base URL của collection kết hợp `app.url` và `modules.api_prefix`; các tham số route Laravel không bắt buộc sẽ trở thành tham số Postman dạng `:parameter`.
 
-## File uploads and WebP
+## Upload file và WebP
 
-`HieuDev92264\LaravelModules\Common\FileHelper` stores an `UploadedFile` to a local directory and returns metadata:
+`HieuDev92264\LaravelModules\Common\FileHelper` lưu `UploadedFile` vào thư mục cục bộ và trả về metadata:
 
 ```php
 use HieuDev92264\LaravelModules\Common\FileHelper;
@@ -70,17 +96,17 @@ $image = FileHelper::saveAsWebp($request->file('avatar'), storage_path('app/uplo
 // path, filename, original_name, extension, mime_type, size
 ```
 
-`saveAsWebp()` accepts valid images supported by the configured `buglinjo/laravel-webp` driver. Publish and configure that dependency before using conversion:
+`saveAsWebp()` nhận các ảnh hợp lệ được driver `buglinjo/laravel-webp` đã cấu hình hỗ trợ. Hãy publish và cấu hình dependency này trước khi dùng tính năng chuyển đổi:
 
 ```bash
 php artisan vendor:publish --provider="Buglinjo\LaravelWebp\WebpServiceProvider" --tag=config
 ```
 
-The default `php-gd` driver requires `ext-gd`; alternatively configure the dependency's `cwebp` driver and executable path in `config/laravel-webp.php`.
+Driver `php-gd` mặc định cần `ext-gd`; hoặc có thể cấu hình driver `cwebp` cùng đường dẫn file thực thi trong `config/laravel-webp.php`.
 
-## API responses
+## API response
 
-The generated controller trait returns a consistent response contract:
+Trait controller được sinh trả về response theo một cấu trúc nhất quán:
 
 ```json
 {
@@ -92,11 +118,11 @@ The generated controller trait returns a consistent response contract:
 }
 ```
 
-Exception diagnostics are added only while `app.debug=true`; trace arguments are never returned.
+Thông tin chẩn đoán exception chỉ được bổ sung khi `app.debug=true`; các đối số của trace không bao giờ được trả về.
 
-## Development checks
+## Kiểm tra khi phát triển
 
-This library intentionally does not commit `composer.lock`; CI resolves dependencies for each supported Laravel version.
+Thư viện này chủ ý không commit `composer.lock`; CI sẽ resolve dependency cho từng phiên bản Laravel được hỗ trợ.
 
 ```bash
 composer validate --strict
@@ -106,6 +132,6 @@ composer test
 composer audit
 ```
 
-GitHub Actions runs this suite for Laravel 10–13. Laravel 13 is tested with PHP 8.3; Laravel 10–12 are tested with PHP 8.2.
+GitHub Actions chạy bộ kiểm tra này cho Laravel 10–13. Laravel 13 được kiểm tra với PHP 8.3; Laravel 10–12 được kiểm tra với PHP 8.2.
 
-Laravel 10 is tested for package compatibility, but its dependency line no longer receives fixes for current framework advisories. The CI security gate therefore audits the current Laravel 13 dependency baseline; Laravel 10 consumers should plan an application upgrade.
+Laravel 10 vẫn được kiểm tra khả năng tương thích với package, nhưng dòng dependency này không còn nhận bản vá cho các cảnh báo bảo mật hiện tại. Cổng kiểm tra bảo mật của CI vì vậy audit theo dependency baseline Laravel 13; các ứng dụng đang dùng Laravel 10 nên lên kế hoạch nâng cấp.
