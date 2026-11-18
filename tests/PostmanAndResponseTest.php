@@ -10,6 +10,7 @@ use HieuDev92264\LaravelModules\Postman\PostmanRequestBuilder;
 use HieuDev92264\LaravelModules\Postman\RouteScanner;
 use HieuDev92264\LaravelModules\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route as RouteFacade;
@@ -69,6 +70,41 @@ class PostmanAndResponseTest extends TestCase
         $this->assertSame(['id' => 1], $payload['metadata']);
         $this->assertSame('/api/billing/invoices', $payload['path']);
         $this->assertArrayHasKey('timestamp', $payload);
+        $this->assertArrayNotHasKey('pagination', $payload);
+    }
+
+    public function test_it_returns_pagination_metadata_for_paginated_responses(): void
+    {
+        $this->app->instance('request', Request::create('/api/billing/invoices?page=2'));
+        $responder = new class
+        {
+            use ApiResponse;
+
+            public function respond(LengthAwarePaginator $paginator): \Illuminate\Http\JsonResponse
+            {
+                return $this->paginated($paginator);
+            }
+        };
+
+        $paginator = new LengthAwarePaginator(
+            items: [['id' => 3], ['id' => 4]],
+            total: 5,
+            perPage: 2,
+            currentPage: 2,
+        );
+
+        $payload = $responder->respond($paginator)->getData(true);
+
+        $this->assertSame([['id' => 3], ['id' => 4]], $payload['metadata']);
+        $this->assertSame([
+            'current_page' => 2,
+            'per_page' => 2,
+            'total' => 5,
+            'last_page' => 3,
+            'from' => 3,
+            'to' => 4,
+            'has_more_pages' => true,
+        ], $payload['pagination']);
     }
 
     public function test_it_scans_module_routes_and_writes_a_postman_collection(): void

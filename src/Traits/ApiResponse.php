@@ -29,6 +29,10 @@ trait ApiResponse
             'timestamp' => now()->toISOString(),
         ];
 
+        if ($pagination !== null) {
+            $payload['pagination'] = $pagination;
+        }
+
         if ($exception && config('app.debug')) {
             $payload['debug'] = [
                 'exception' => $exception::class,
